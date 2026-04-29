@@ -14,9 +14,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class PaymentWatcherService {
-
-    // ВИПРАВЛЕНО: Прибираємо "Invoice." перед назвою.
-    // Тепер тип просто InvoiceRepository, як і має бути у окремого інтерфейсу.
     private final InvoiceRepository invoiceRepository;
 
     @Scheduled(fixedRate = 30000)

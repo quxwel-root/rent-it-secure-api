@@ -49,37 +49,28 @@ public class PaymentServiceImpl implements PaymentService {
 
             Invoice invoice = invoiceRepository.findById(UUID.fromString(invoiceId))
                     .orElseThrow(() -> new PaymentException("Інвойс не знайдено"));
-
-            // 1. Броня від подвійного списання
             if (invoice.getStatus() == PaymentStatus.PAID) {
-                System.out.println("⚠️ DOUBLE SPEND ATTEMPT");
+                System.out.println(" DOUBLE SPEND ATTEMPT");
                 return;
             }
-
-            // 2. СПОЧАТКУ ПЕРЕВІРЯЄМО СУМУ
             if (received.compareTo(invoice.getAmountExpected()) < 0) {
                 invoice.setStatus(PaymentStatus.UNDERPAID);
                 invoice.setAmountReceived(received);
-                invoiceRepository.save(invoice); // Зберігаємо недоплату в базу
-                throw new PaymentException("Недоплата"); // Вихід через помилку
+                invoiceRepository.save(invoice);
+                throw new PaymentException("Недоплата");
             }
 
-            // 3. ЯКЩО СУМА ОК — ЗАРЯДЖАЄМО PAID
             invoice.setAmountReceived(received);
             invoice.setStatus(PaymentStatus.PAID);
             invoiceRepository.save(invoice);
 
-            // 4. ТІЛЬКИ ТЕПЕР СПОПОВІЩЕННЯ (Яке може падати, і це не зламає платіж)
-            // Поки немає URL — просто закоментуй або додай IF
-            if (false) { // Тимчасовий запобіжник, поки не створиш бота
+            if (false) {
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.postForObject("", new HashMap<>(), String.class);
             }
-
         } catch (PaymentException e) {
             throw e;
         } catch (Exception e) {
-            // Якщо ми тут — значить щось бахнуло непередбачуване
             throw new PaymentException("Помилка процесингу");
         }
     }
